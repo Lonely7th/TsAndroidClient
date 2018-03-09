@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tv_content"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="平安银行(000001)"
+        android:textSize="14sp"
+        android:gravity="center_vertical"
+        android:textColor="@color/gray_overlay"
+        android:padding="8dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/gray_overlay"
+        android:alpha="0.3"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="8dp"/>
+
+</LinearLayout>
