@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
         //设置y轴(左边)
         YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setEnabled(true);
-        leftAxis.setLabelCount(7, false);
+        leftAxis.setLabelCount(5, false);
         leftAxis.setDrawGridLines(true);
         leftAxis.setDrawAxisLine(false);
         leftAxis.setGridColor(ContextCompat.getColor(MainActivity.this, R.color.gray_overlay));
@@ -343,6 +343,13 @@ public class MainActivity extends Activity {
         tvOpenPrice.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.white_overlay));
         tvMaxPrice.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.white_overlay));
         tvMinPrice.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.white_overlay));
+        if(xVals != null && yVals != null){
+            xVals.clear();
+            yVals.clear();
+            mChart.highlightValues(null);//撤消所有高亮显示
+            mChart.notifyDataSetChanged();
+            mChart.invalidate();
+        }
     }
 
     /**
