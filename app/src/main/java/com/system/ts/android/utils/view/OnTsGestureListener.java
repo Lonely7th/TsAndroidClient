@@ -23,10 +23,8 @@ public interface OnTsGestureListener {
     /**
      * 匀速滑动
      * @param direction 滑动方向
-     * @param startPosition 数据起点
-     * @param endPosition 数据终点
      */
-    void onChartSlowSlide(int direction, int startPosition, int endPosition);
+    void onChartSlowSlide(int direction);
     /**
      * 长按后滑动
      * @param position 当前位置

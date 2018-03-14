@@ -1,7 +1,6 @@
 package com.system.ts.android.utils.view;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,13 +11,6 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.system.ts.android.bean.TkDetailsBean;
-import com.system.ts.android.utils.MyTimeUtils;
-import com.system.ts.android.utils.SharedPreferencesUtils;
-import com.system.ts.android.utils.TkCodeUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Time ： 2018/3/13 .
@@ -29,7 +21,6 @@ import java.util.List;
 public class TsCandleStickChart extends CandleStickChart {
     private static final int FLIP_PERIOD = 200;//翻页事件的时间间隔
     private static final int SLIDE_PERIOD = 300;//滚动事件的时间间隔
-    private static final int X_ANIMATE_PERIOD = 500;//X轴动画的时间间隔
     private static final int FLIP_DISTANCE = 3600;//翻页事件的最小速率
     private static final int INSERTDATAPIXELS = 20;//滑动距离与数据量的比例
 
@@ -38,42 +29,37 @@ public class TsCandleStickChart extends CandleStickChart {
     private boolean isLongPressed = false;//是否处于长按状态
     private float currentDownindex = 0.0f;//当前点击的坐标
 
-    private List<TkDetailsBean> tkData = new ArrayList<>();
-
     public TsCandleStickChart(Context context) {
         super(context);
-        initListener();
     }
 
     public TsCandleStickChart(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initListener();
     }
 
     public TsCandleStickChart(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        initListener();
     }
 
-    /**
-     * 数据更新
-     */
-    public void notifyTsDataSetChanged(List<TkDetailsBean> tkData){
-        if(this.tkData != null){
-            this.tkData.clear();
-            this.tkData.addAll(tkData);
-        }
-        notifyDataSetChanged();
+    public void setOnTsGestureListener(OnTsGestureListener onTsGestureListener){
+        this.onTsGestureListener = onTsGestureListener;
     }
 
     /**
      * 初始化监听
      */
-    protected void initListener(){
+    @Override
+    protected void init(){
+        super.init();
+        setHighlightPerDragEnabled(false);//直接拖动屏幕时不显示高亮
+        setHighlightPerTapEnabled(false);//点击屏幕时不显示高亮
+        //设置监听
         setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
-
+                if (isLongPressed && onTsGestureListener != null) {
+                    onTsGestureListener.onChartSlideLongClick(e.getXIndex());
+                }
             }
 
             @Override
@@ -89,9 +75,16 @@ public class TsCandleStickChart extends CandleStickChart {
                         currentDownindex = motionEvent.getRawX();
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        if(!isLongPressed){
-                            if(MyTimeUtils.getDistanceTime(motionEvent.getDownTime(), motionEvent.getEventTime()) > SLIDE_PERIOD){
-//                                onTranslateUI(motionEvent.getRawX());
+                        if(!isLongPressed && onTsGestureListener != null){
+                            if((motionEvent.getEventTime() - motionEvent.getDownTime()) > SLIDE_PERIOD){
+                                float rawX = motionEvent.getRawX();
+                                int distance = (int)(rawX - currentDownindex);
+                                if(Math.abs(distance) > INSERTDATAPIXELS){//每滑过一个单位都要更新用户手势的位置
+                                    currentDownindex = rawX;
+                                    int num = distance/INSERTDATAPIXELS;
+                                    int change = num > 0?1:-1;
+                                    onTsGestureListener.onChartSlowSlide(change);
+                                }
                             }
                         }
                         break;
@@ -125,28 +118,26 @@ public class TsCandleStickChart extends CandleStickChart {
 
             @Override
             public void onChartDoubleTapped(MotionEvent me) {
-
+                if(onTsGestureListener != null){
+                    onTsGestureListener.onChartDoubleTapped();
+                }
             }
 
             @Override
             public void onChartSingleTapped(MotionEvent me) {
-
+                if(onTsGestureListener != null){
+                    onTsGestureListener.onChartSingleTapped();
+                }
             }
 
             @Override
             public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
-                if (!isLongPressed) {
-                    if(MyTimeUtils.getDistanceTime(me2.getDownTime(), me2.getEventTime()) < FLIP_PERIOD){
+                if (!isLongPressed && onTsGestureListener != null) {
+                    if((me2.getEventTime() - me2.getDownTime()) < FLIP_PERIOD){
                         if (velocityX > FLIP_DISTANCE) {
-                            String code = TkCodeUtils.getNextCode(SharedPreferencesUtils.getCurrentTkCode(), -1);
-                            if (!TextUtils.isEmpty(code)) {
-//                                loadStickData(code, true);
-                            }
+                            onTsGestureListener.onChartFastSlide(-1);
                         } else if (velocityX < -FLIP_DISTANCE) {
-                            String code = TkCodeUtils.getNextCode(SharedPreferencesUtils.getCurrentTkCode(), 1);
-                            if (!TextUtils.isEmpty(code)) {
-//                                loadStickData(code, true);
-                            }
+                            onTsGestureListener.onChartFastSlide(1);
                         }
                     }
                 }
