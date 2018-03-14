@@ -21,7 +21,7 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 public class TsCandleStickChart extends CandleStickChart {
     private static final int FLIP_PERIOD = 200;//翻页事件的时间间隔
     private static final int SLIDE_PERIOD = 300;//滚动事件的时间间隔
-    private static final int FLIP_DISTANCE = 3600;//翻页事件的最小速率
+    private static final int FLIP_DISTANCE = 3000;//翻页事件的最小速率
     private static final int INSERTDATAPIXELS = 20;//滑动距离与数据量的比例
 
     private OnTsGestureListener onTsGestureListener;
@@ -43,6 +43,8 @@ public class TsCandleStickChart extends CandleStickChart {
 
     public void setOnTsGestureListener(OnTsGestureListener onTsGestureListener){
         this.onTsGestureListener = onTsGestureListener;
+        setHighlightPerDragEnabled(false);//直接拖动屏幕时不显示高亮
+        setHighlightPerTapEnabled(false);//点击屏幕时不显示高亮
     }
 
     /**
@@ -51,8 +53,6 @@ public class TsCandleStickChart extends CandleStickChart {
     @Override
     protected void init(){
         super.init();
-        setHighlightPerDragEnabled(false);//直接拖动屏幕时不显示高亮
-        setHighlightPerTapEnabled(false);//点击屏幕时不显示高亮
         //设置监听
         setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override

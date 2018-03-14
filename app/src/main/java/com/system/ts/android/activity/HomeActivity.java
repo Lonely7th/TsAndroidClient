@@ -47,7 +47,7 @@ import okhttp3.Call;
 import okhttp3.Response;
 
 public class HomeActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "HomeActivity";
     private static final int X_ANIMATE_PERIOD = 500;//X轴动画的时间间隔
     @Bind(R.id.tv_tk_title)
     TextView tvTkTitle;
@@ -90,7 +90,7 @@ public class HomeActivity extends AppCompatActivity {
     private boolean isFristLoad = true;//是否第一次加载
     private boolean loadError = false;//当前状态是否为加载失败
     private boolean isLoading = false;//是否正在加载
-    private int currentShowCount = 80;//当前展示数据的总量
+    private int currentShowCount = 80;//当前展示的数据量
     private int currentEndIndex = 0;//最后一条数据的坐标
 
     @Override
@@ -140,12 +140,12 @@ public class HomeActivity extends AppCompatActivity {
         //设置监听器
         mChart.setOnTsGestureListener(new OnTsGestureListener() {
             @Override
-            public void onChartSingleTapped() {
+            public void onChartSingleTapped() { //单次点击
 
             }
 
             @Override
-            public void onChartDoubleTapped() {
+            public void onChartDoubleTapped() { //多次点击
                 if (loadError) {
                     String tkCode = SharedPreferencesUtils.getCurrentTkCode();
                     loadStickData(tkCode, true);
@@ -153,7 +153,7 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onChartFastSlide(int direction) {
+            public void onChartFastSlide(int direction) { //快速滑动
                 String code = TkCodeUtils.getNextCode(SharedPreferencesUtils.getCurrentTkCode(), direction);
                 if (!TextUtils.isEmpty(code)) {
                     loadStickData(code, true);
@@ -161,12 +161,12 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onChartSlowSlide(int direction) {
+            public void onChartSlowSlide(int direction) { //匀速滑动
                 onTranslateUI(direction);
             }
 
             @Override
-            public void onChartSlideLongClick(int position) {
+            public void onChartSlideLongClick(int position) { //长按后滑动
                 updateTopView(position);
             }
         });
