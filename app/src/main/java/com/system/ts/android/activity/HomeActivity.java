@@ -91,7 +91,8 @@ public class HomeActivity extends AppCompatActivity {
     private boolean loadError = false;//当前状态是否为加载失败
     private boolean isLoading = false;//是否正在加载
     private int currentShowCount = 80;//当前展示的数据量
-    private int currentEndIndex = 0;//最后一条数据的坐标
+    private int currentStartIndex = 0;//当前数据的起点
+    private int currentEndIndex = 0;//当前数据的终点
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -179,8 +180,7 @@ public class HomeActivity extends AppCompatActivity {
         if (index >= tkData.size()) {
             return;
         }
-        int start_index = getDataStartIndex();
-        TkDetailsBean bean = tkData.get(start_index + index);
+        TkDetailsBean bean = tkData.get(currentStartIndex + index);
         tvCurTime.setText(bean.getCur_timer());
         tvTotalMoney.setText(MyVolumeFormatter.moneyFormatter(bean.getCur_total_money()));
         tvTotalVolume.setText(MyVolumeFormatter.volumeFormatter(bean.getCur_total_volume()));
@@ -222,11 +222,10 @@ public class HomeActivity extends AppCompatActivity {
      * 刷新底部View
      */
     private void updateBottomView() {
-        if (tkData.size() < 2) {
+        if (currentStartIndex >= tkData.size() || currentEndIndex >= tkData.size()) {
             return;
         }
-        int start_index = getDataStartIndex();
-        tvFristTime.setText(tkData.get(start_index).getCur_timer());
+        tvFristTime.setText(tkData.get(currentStartIndex).getCur_timer());
         tvLastTime.setText(tkData.get(currentEndIndex).getCur_timer());
     }
 
@@ -269,6 +268,8 @@ public class HomeActivity extends AppCompatActivity {
             return;
         }
         clearTopView();//加载前清空顶部栏
+        tvTkTitle.setText(TkCodeUtils.getNamebyCode(tkCode));
+        tvTkCode.setText(tkCode);
         OkGo.get(HttpApi.BASE_URL).tag(this)
                 .params("code", tkCode)
                 .execute(new StringCallback() {
@@ -295,8 +296,9 @@ public class HomeActivity extends AppCompatActivity {
                                     );
                                     tkData.add(bean);
                                 }
-                                //解析绘图需要的数据
                                 currentEndIndex = tkData.size() - 1;
+                                updateDataIndex(0);
+                                //解析绘图需要的数据
                                 float[] yAxisArray = updateDrawData();
                                 //每次都要重新设置坐标轴的极值
                                 YAxis leftAxis = mChart.getAxisLeft();
@@ -324,9 +326,7 @@ public class HomeActivity extends AppCompatActivity {
                                     mChart.notifyDataSetChanged();
                                     mChart.invalidate();
                                 }
-                                tvTkTitle.setText(TkCodeUtils.getNamebyCode(tkCode));
-                                tvTkCode.setText(tkCode);
-                                updateTopView(currentEndIndex - getDataStartIndex());
+                                updateTopView(currentEndIndex - currentStartIndex);
                                 updateBottomView();
                                 //缓存当前展示的证券代码
                                 SharedPreferencesUtils.setCurrentTkCode(tkCode);
@@ -393,7 +393,7 @@ public class HomeActivity extends AppCompatActivity {
         //刷新底部View
         updateBottomView();
         //刷新顶部View
-        updateTopView(currentEndIndex - getDataStartIndex());
+        updateTopView(currentEndIndex - currentStartIndex);
         mChart.highlightValues(null);
         mChart.notifyDataSetChanged();
         mChart.invalidate();
@@ -403,7 +403,7 @@ public class HomeActivity extends AppCompatActivity {
      * 页面滑动
      */
     private void onTranslateUI(int direction) {
-        if (setDataEndIndex(direction)) {
+        if (updateDataIndex(direction)) {
             //解析绘图需要的数据
             float[] yAxisArray = updateDrawData();
             //每次都要重新设置坐标轴的极值
@@ -413,7 +413,7 @@ public class HomeActivity extends AppCompatActivity {
             //刷新底部View
             updateBottomView();
             //刷新顶部View
-            updateTopView(currentEndIndex - getDataStartIndex());
+            updateTopView(currentEndIndex - currentStartIndex);
             mChart.highlightValues(null);
             mChart.notifyDataSetChanged();
             mChart.invalidate();
@@ -421,8 +421,27 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     /**
+     * 更新数据的起点和终点
+     */
+    private boolean updateDataIndex(int direction) {
+        if (direction < 0 && currentEndIndex >= tkData.size() - 1) {//页面不能向左滑动
+            return false;
+        }
+        if (direction > 0 && currentEndIndex <= currentShowCount) {//页面不能向右滑动
+            return false;
+        }
+        currentEndIndex -= direction;
+        if (currentShowCount < currentEndIndex) {
+            currentStartIndex = currentEndIndex - currentShowCount;
+        } else {
+            int length = tkData.size() - 1;
+            currentEndIndex = currentShowCount > length ? length : currentShowCount;
+        }
+        return true;
+    }
+
+    /**
      * 更新绘图所需要的数据(按照展示数量)
-     *
      * @return 当前数据的最大值和最小值
      */
     private float[] updateDrawData() {
@@ -432,16 +451,15 @@ public class HomeActivity extends AppCompatActivity {
         }
         float yAxisMax = Float.MIN_VALUE;
         float yAxisMin = Float.MAX_VALUE;
-        int start_index = getDataStartIndex();
-        for (int i = start_index; i <= currentEndIndex; i++) {
+        for (int i = currentStartIndex; i <= currentEndIndex; i++) {
             TkDetailsBean bean = tkData.get(i);
             float open = Float.parseFloat(bean.getCur_open_price());
             float close = Float.parseFloat(bean.getCur_close_price());
             float shadowH = Float.parseFloat(bean.getCur_max_price());
             float shadowL = Float.parseFloat(bean.getCur_min_price());
-            CandleEntry ce = new CandleEntry(i - start_index, shadowH, shadowL, open, close);
+            CandleEntry ce = new CandleEntry(i - currentStartIndex, shadowH, shadowL, open, close);
             yVals.add(ce);
-            xVals.add("" + (i - start_index));
+            xVals.add("" + (i - currentStartIndex));
             if (yAxisMax < shadowH) {
                 yAxisMax = shadowH;
             }
@@ -450,36 +468,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
         return new float[]{yAxisMax, yAxisMin};
-    }
-
-    /**
-     * 设置当前数据的起点
-     *
-     * @return 数据起点坐标
-     */
-    private int getDataStartIndex() {
-        int start_index = 0;
-        if (currentShowCount < currentEndIndex) {
-            start_index = currentEndIndex - currentShowCount;
-        } else {
-            int length = tkData.size() - 1;
-            currentEndIndex = currentShowCount > length ? length : currentShowCount;
-        }
-        return start_index;
-    }
-
-    /**
-     * 设置当前数据的终点
-     */
-    private boolean setDataEndIndex(int direction) {
-        if (direction < 0 && currentEndIndex >= tkData.size() - 1) {//页面不能向左滑动
-            return false;
-        }
-        if (direction > 0 && currentEndIndex <= currentShowCount) {//页面不能向右滑动
-            return false;
-        }
-        currentEndIndex -= direction;
-        return true;
     }
 
     @Override
