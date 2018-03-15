@@ -49,6 +49,9 @@ import okhttp3.Response;
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
     private static final int X_ANIMATE_PERIOD = 500;//X轴动画的时间间隔
+    private static final int SCREEN_DATA_MAX = 100;//展示数据的最大值
+    private static final int SCREEN_DATA_MIN = 20;//展示数据的最小值
+    private static final int SCREEN_DATA_CHANGE = 20;//数据压缩/拉升量
     @Bind(R.id.tv_tk_title)
     TextView tvTkTitle;
     @Bind(R.id.tv_tk_code)
@@ -364,26 +367,9 @@ public class HomeActivity extends AppCompatActivity {
 
     /**
      * 页面伸缩
-     *
-     * @param flags 伸长或者缩短的标志
      */
-    private void onScaleUI(int flags) {
-        switch (flags) {
-            case 1://页面拉伸
-                if (currentShowCount < 100) {
-                    currentShowCount += 20;
-                } else {
-                    return;
-                }
-                break;
-            case -1://页面压缩
-                if (currentShowCount > 20) {
-                    currentShowCount -= 20;
-                } else {
-                    return;
-                }
-                break;
-        }
+    private void onScaleUI() {
+        updateDataIndex(0);
         //解析绘图需要的数据
         float[] yAxisArray = updateDrawData();
         //每次都要重新设置坐标轴的极值
@@ -488,10 +474,16 @@ public class HomeActivity extends AppCompatActivity {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_bar_min://页面压缩
-                onScaleUI(-1);
+                if (currentShowCount > SCREEN_DATA_MIN) {
+                    currentShowCount -= SCREEN_DATA_CHANGE;
+                    onScaleUI();
+                }
                 break;
             case R.id.btn_bar_max://页面拉伸
-                onScaleUI(1);
+                if (currentShowCount < SCREEN_DATA_MAX) {
+                    currentShowCount += SCREEN_DATA_CHANGE;
+                    onScaleUI();
+                }
                 break;
             case R.id.btn_search://跳转到搜索页面
                 startActivityForResult(new Intent(this, SearchTkActivity.class), 1);
