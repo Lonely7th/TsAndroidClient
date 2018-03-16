@@ -93,7 +93,7 @@ public class HomeActivity extends AppCompatActivity {
     private boolean isFristLoad = true;//是否第一次加载
     private boolean loadError = false;//当前状态是否为加载失败
     private boolean isLoading = false;//是否正在加载
-    private int currentShowCount = 80;//当前展示的数据量
+    private int currentShowCount = 80;//当前数据的展示量
     private int currentStartIndex = 0;//当前数据的起点
     private int currentEndIndex = 0;//当前数据的终点
 
