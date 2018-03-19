@@ -218,10 +218,15 @@ mChart.setData(candleData);
 
 上个章节我们使用MPAndroidChart完成了一个静态的K线面板，这个章节我们将介绍如何在K线面板中处理用户的手势操作。
 ## 处理用户的手势操作
+
 **在K线面板中，需要处理的手势操作主要包括：**
+
 **1.单次点击（加载失败时重新加载）**
+
 **2.匀速滑动（K线图左右滚动）**
+
 **3.快速滑动（前后切换股票）**
+
 **4.长按后滑动（高亮显示被选中的数据）**
 
 如果你对上述手势操作不是太了解，可以下载apk体验一下  [apk下载地址](https://www.pgyer.com/Z8lM)
@@ -395,11 +400,11 @@ mChart.setOnTsGestureListener(new OnTsGestureListener() {
 
 **3.拉伸和压缩K线图**
 
-**源码下载地址：[https://github.com/Lonely7th/TsAndroidClient](https://github.com/Lonely7th/TsAndroidClient)**
+源码下载地址：[https://github.com/Lonely7th/TsAndroidClient](https://github.com/Lonely7th/TsAndroidClient)
 
-#1.刷新当前展示的数据
+# 1.刷新当前展示的数据
 上一节我们谈到了如何处理用户的手势操作，处理的结果最终都要体现在K线图中，CandleStickChart已经为我们实现了很多功能，我们只需要更新List<CandleEntry>中的内容就可以达到刷新页面的目的，这里我们定义数据起点、数据终点和数据展示量三个变量，通过这三个变量来更新列表的内容。
-**刷新数据的起点和终点，**每次执行滑动操作时都会调用该方法：
+刷新数据的起点和终点，每次执行滑动操作时都会调用该方法：
 ```
 private boolean updateDataIndex(int direction) {
         if (direction < 0 && currentEndIndex >= tkData.size() - 1) {//页面不能向左滑动
@@ -418,7 +423,7 @@ private boolean updateDataIndex(int direction) {
         return true;
     }
 ```
-**更新数据列表，**数据起点、数据终点和数据展示量有变动时会调用该方法：
+更新数据列表，数据起点、数据终点和数据展示量有变动时会调用该方法：
 ```
 private float[] updateDrawData() {
         if (xVals != null && yVals != null) {
@@ -447,7 +452,7 @@ private float[] updateDrawData() {
     }
 
 ```
-#2.自定义y轴的样式
+# 2.自定义y轴的样式
 CandleStickChart提供了很多方法用于定义y轴的样式，包括自定义网格线、文字颜色、文字格式等等。
 CandleStickChart会自动计算当前数据的最大值和最小值作为绘图的上下边界，但是这个边界并不会随着展示数据的变动而改变，所以这里我们需要每次都重新设置y轴的边界值：
 ```
@@ -476,7 +481,7 @@ public class MyYAxisValueFormatter implements YAxisValueFormatter {
 }
 
 ```
-#3.拉伸和压缩K线图
+# 3.拉伸和压缩K线图
 拉伸和压缩K线图也是K线面板中不可缺少的功能，这里我们通过修改当前的数据展示量来实现拉伸和压缩的效果：
 ```
 switch (view.getId()) {
