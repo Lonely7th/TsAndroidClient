@@ -233,7 +233,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     /**
-     * 清空顶部View(刷新页面前调用)
+     * 清空顶部View
      */
     private void clearTopView() {
         tvTkTitle.setText("--");
