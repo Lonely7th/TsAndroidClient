@@ -111,7 +111,6 @@ public class HomeActivity extends AppCompatActivity {
      * 初始化控件
      */
     private void initView() {
-        //基本设置
         mChart.setNoDataTextDescription("加载中...");//如果没有数据的时候，会显示这个
         mChart.setDrawGridBackground(false);//是否显示表格颜色
         mChart.setBackgroundColor(Color.BLACK);//设置背景
