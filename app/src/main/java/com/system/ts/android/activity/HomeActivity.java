@@ -1,9 +1,11 @@
 package com.system.ts.android.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -45,7 +48,11 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import okhttp3.Call;
 import okhttp3.Response;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.RuntimePermissions;
 
+@RuntimePermissions
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
     private static final int X_ANIMATE_PERIOD = 500;//X轴动画的时间间隔
@@ -455,6 +462,11 @@ public class HomeActivity extends AppCompatActivity {
         return new float[]{yAxisMax, yAxisMin};
     }
 
+    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public void startSearchActivity(){
+        startActivityForResult(new Intent(this, SearchTkActivity.class), 1);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -467,6 +479,12 @@ public class HomeActivity extends AppCompatActivity {
                     break;
             }
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        HomeActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
     @OnClick({R.id.btn_bar_min, R.id.btn_bar_max, R.id.btn_search})
@@ -485,7 +503,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.btn_search://跳转到搜索页面
-                startActivityForResult(new Intent(this, SearchTkActivity.class), 1);
+                HomeActivityPermissionsDispatcher.startSearchActivityWithCheck(HomeActivity.this);
                 break;
         }
     }
