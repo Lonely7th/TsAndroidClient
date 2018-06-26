@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TsSystemAndroidClient.iml" filepath="$PROJECT_DIR$/TsSystemAndroidClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TsAndroidClient.iml" filepath="$PROJECT_DIR$/TsAndroidClient.iml" />
+      <module fileurl="file://D:\Python36\workspace\TsAndroidClient\TsSystemAndroidClient.iml" filepath="D:\Python36\workspace\TsAndroidClient\TsSystemAndroidClient.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://D:\Python36\workspace\TsAndroidClient\app\app.iml" filepath="D:\Python36\workspace\TsAndroidClient\app\app.iml" />
     </modules>
   </component>
 </project>

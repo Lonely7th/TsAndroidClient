@@ -55,10 +55,12 @@ import permissions.dispatcher.RuntimePermissions;
 @RuntimePermissions
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
-    private static final int X_ANIMATE_PERIOD = 500;//X轴动画的时间间隔
+    private static final int X_ANIMATE_PERIOD = 120000;//X轴动画的时间间隔
     private static final int SCREEN_DATA_MAX = 100;//展示数据的最大值
     private static final int SCREEN_DATA_MIN = 20;//展示数据的最小值
     private static final int SCREEN_DATA_CHANGE = 20;//数据压缩/拉升量
+
+    private static final int LOADING_CYCLE = 10;//加载周期
     @Bind(R.id.tv_tk_title)
     TextView tvTkTitle;
     @Bind(R.id.tv_tk_code)
@@ -100,7 +102,7 @@ public class HomeActivity extends AppCompatActivity {
     private boolean isFristLoad = true;//是否第一次加载
     private boolean loadError = false;//当前状态是否为加载失败
     private boolean isLoading = false;//是否正在加载
-    private int currentShowCount = 80;//当前数据的展示量
+    private int currentShowCount = 120;//当前数据的展示量
     private int currentStartIndex = 0;//当前数据的起点
     private int currentEndIndex = 0;//当前数据的终点
 
@@ -332,6 +334,7 @@ public class HomeActivity extends AppCompatActivity {
                                     mChart.setData(candleData);
                                 } else {
                                     mChart.highlightValues(null);//撤消所有高亮显示
+                                    mChart.animateX(X_ANIMATE_PERIOD); //立即执行的动画,x轴
                                     mChart.notifyDataSetChanged();
                                     mChart.invalidate();
                                 }
@@ -491,14 +494,14 @@ public class HomeActivity extends AppCompatActivity {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_bar_min://页面压缩
-                if (currentShowCount > SCREEN_DATA_MIN) {
-                    currentShowCount -= SCREEN_DATA_CHANGE;
+                if (currentShowCount < SCREEN_DATA_MAX) {
+                    currentShowCount += SCREEN_DATA_CHANGE;
                     onScaleUI();
                 }
                 break;
             case R.id.btn_bar_max://页面拉伸
-                if (currentShowCount < SCREEN_DATA_MAX) {
-                    currentShowCount += SCREEN_DATA_CHANGE;
+                if (currentShowCount > SCREEN_DATA_MIN) {
+                    currentShowCount -= SCREEN_DATA_CHANGE;
                     onScaleUI();
                 }
                 break;
